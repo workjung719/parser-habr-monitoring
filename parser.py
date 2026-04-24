@@ -178,6 +178,18 @@ def save_to_excel(path: str, new_articles: list[dict]) -> None:
     print(f"[OK]   Сохранено строк всего: {len(combined)} → {path}")
 
 
+def rating_to_int(article: dict) -> int:
+    """Безопасно превращает рейтинг из строки в число.
+    Обрабатывает None, хабровский длинный минус '−', и мусор."""
+    raw = article.get("rating")
+    if not raw:
+        return 0
+    try:
+        return int(raw.replace("−", "-"))
+    except (ValueError, AttributeError, TypeError):
+        return 0
+
+
 def main() -> None:
     print("[INFO] === Старт парсинга Хабра ===")
 
@@ -189,8 +201,21 @@ def main() -> None:
     save_to_excel(EXCEL_FILE, new_articles)
     save_seen(SEEN_FILE, seen)
 
-    print("[INFO] === Готово ===")
+    # === ТОП-3 по рейтингу ===
+    if new_articles:
+        top_3 = sorted(new_articles, key=rating_to_int, reverse=True)[:3]
+
+        print("\n[INFO] === ТОП-3 ПО РЕЙТИНГУ ===")
+        for article in top_3:
+            rating = article.get("rating") or "—"
+            title = article.get("title") or "(без заголовка)"
+            print(f"⭐ {rating:>5} | {title}")
+    else:
+        print("\n[INFO] Новых статей нет — топ показывать нечего.")
+
+    print("\n[INFO] === Готово ===")
 
 
 if __name__ == "__main__":
-    main()    
+    main()
+
