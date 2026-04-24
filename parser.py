@@ -87,6 +87,8 @@ def parse_card(card, base_url: str = "https://habr.com") -> dict | None:
     """
     href = safe_text(card, "h2.tm-title a.tm-title__link", attr="href")
     title = safe_text(card, "h2.tm-title a.tm-title__link")
+    raw_date = safe_text(card, "time", attr="datetime")
+   
 
     if not href or not title:
         print("[SKIP] Не удалось извлечь заголовок или ссылку из карточки")
@@ -97,7 +99,7 @@ def parse_card(card, base_url: str = "https://habr.com") -> dict | None:
     article = {
         "title": title,
         "author": safe_text(card, "a.tm-user-info__username"),
-        "date": safe_text(card, "time", attr="datetime"),
+        "date": raw_date[:16].replace("T", " ") if raw_date else None,
         "rating": safe_text(card, "span.tm-votes-meter__value"),
         "views": safe_text(card, "span.tm-icon-counter__value"),
         "url": url,
